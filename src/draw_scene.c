@@ -1,55 +1,17 @@
 #include "draw_scene.h"
 #include "3D_tools.h"
+#include "ball.h"
 
-void drawBase() {
+void drawball(Ball *ball){
+    ball->posX += ball->speedX;
+    ball->posY += ball->speedY;
+    ball->posZ += ball->speedZ;
     glPushMatrix();
-	glColor3f(235.0/255.0 , 207.0/255.0 , 52.0/255.0);
-    glScalef(3.0,3.0,0.0);
-	drawCircle();
-    glPopMatrix();
-
-    glPushMatrix();
-    glScalef(2.0,2.0,10.0);
-    drawCone();
-    glPopMatrix();
-}
-
-void drawArm() {
-    
-    glPushMatrix();
-        glColor3f(245.0/255.0 , 164.0 / 255.0 , 66.0/255.0);
-        glTranslatef(0.,0.,10.); 
-        glScalef(3.2/2.,3.2/2.,3.2/2.);
+        glColor3f(183/255.,1.,216/255.); 
+        glTranslatef(ball->posX,ball->posY,ball->posZ);      
         drawSphere();
     glPopMatrix();
 
-    glPushMatrix();
-
-        glTranslatef(0.0,0.0,10.0);
-        glRotatef(90.,0.,1.,0.);
-        glScalef(1.0,1.0,10.0);
-        drawCone();
-    glPopMatrix();
-
-    glPushMatrix();
-        glTranslatef(0.,0.,10.);
-        glRotatef(-90.,0.,1.,0.);
-        glScalef(1.0,1.0,10.0);
-        drawCone();
-    glPopMatrix();
-}
-
-void drawPan() {
-    glPushMatrix();
-        glColor3f(1.0/255., 0., 0.);
-        glTranslatef(-10., 0., 5.);
-        glScalef(3.,3.,3.);
-        drawCircle();
-    glPopMatrix();
-
-    glPushMatrix();
-        
-    glPopMatrix();
 }
 
 void drawFrame(){

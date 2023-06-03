@@ -3,11 +3,11 @@
 #include <math.h>
 
 
-void drawCorridor(float profondeur){
+void drawCorridor(float profondeur, float taille){
     //sol
     glPushMatrix();
 		glTranslatef(profondeur,0.,-5.);
-		glScalef(600., 40., 1.);
+		glScalef(taille, 40., 1.);
 		glColor3f(196/225.,245/255.0,252/255.);
 		drawSquareXY();
 	glPopMatrix();
@@ -15,7 +15,7 @@ void drawCorridor(float profondeur){
     // Mur gauche
 	glPushMatrix();
 		glTranslatef(profondeur, -10., 0.);
-		glScalef(600., 1., 100.);
+		glScalef(taille, 1., 100.);
 		glColor3f(1.0,193/255.0,207/255.);
 		drawSquareXZ();
     glPopMatrix();
@@ -23,7 +23,7 @@ void drawCorridor(float profondeur){
 // mur droit
 	glPushMatrix();
 		glTranslatef(profondeur, 10., 0.);
-		glScalef(600., 1., 100.);
+		glScalef(taille, 1., 100.);
 		glColor3f(1.0,193/255.0,207/255.);
 		drawSquareXZ();
     glPopMatrix();
@@ -32,8 +32,8 @@ void drawCorridor(float profondeur){
     //plafond
     glPushMatrix();
 		glTranslatef(profondeur,0.,5.);
-		glScalef(600., 40., 1.);
+		glScalef(taille, 40., 1.);
 		glColor3f(196/225.,245/255.0,252/255.);
-		drawSquareXY(profondeur);
+		drawSquareXY();
 	glPopMatrix();
 }

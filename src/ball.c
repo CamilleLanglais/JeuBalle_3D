@@ -13,4 +13,4 @@ Ball* initBall(float posX,float posY, float posZ, float speedX, float speedY, fl
     ball->speedZ = speedZ;  
     ball->radius = radius; 
     return ball;
-} Ball;
+};

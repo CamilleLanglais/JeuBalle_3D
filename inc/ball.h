@@ -12,5 +12,14 @@
 #include <stdio.h>
 #include <math.h>
 
-void drawball();
+typedef struct Ball{
+    float posX;
+    float posY;
+    float posZ;
+    float speedX;
+    float speedY;
+    float speedZ;  
+    float radius;
+}Ball;
 
+Ball* initBall(float posX,float posY, float posZ, float speedX, float speedY, float speedZ, float radius);

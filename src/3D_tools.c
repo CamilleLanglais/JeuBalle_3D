@@ -72,7 +72,5 @@ void drawCone() {
 void drawSphere() {
 	glScalef(0.5,0.5,0.5);
 	glTranslatef(0.,0.,-3.);
-	gluSphere(gluNewQuadric(),1.0,NB_SEG_CIRCLE,NB_SEG_CIRCLE);
-	
-	
+	gluSphere(gluNewQuadric(),1.0,NB_SEG_CIRCLE,NB_SEG_CIRCLE);	
 }

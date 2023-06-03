@@ -11,11 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include "ball.h"
 
-void drawFrame();
 
-void drawBase();
-
-void drawArm();
-
-void drawPan();
+void drawball(Ball *ball);

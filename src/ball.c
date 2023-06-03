@@ -3,12 +3,14 @@
 #include <math.h>
 #include "ball.h"
 
-void drawball(){
-    glPushMatrix();
-        glColor3f(183/255.,1.,216/255.);       
-        drawSphere();
-        glTranslatef(0.,0.,2.);
-
-    glPopMatrix();
-
-}
+Ball* initBall(float posX,float posY, float posZ, float speedX, float speedY, float speedZ, float radius){
+     Ball* ball = (Ball*)malloc(sizeof(Ball));
+    ball->posX = posX; 
+    ball->posY = posY;  
+    ball->posZ = posZ; 
+    ball->speedX = speedX; 
+    ball->speedY = speedY; 
+    ball->speedZ = speedZ;  
+    ball->radius = radius; 
+    return ball;
+} Ball;

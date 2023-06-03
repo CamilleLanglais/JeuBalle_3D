@@ -20,6 +20,8 @@
 #include "obstacles.h"
 
 
+
+
 /* Window properties */
 static const unsigned int WINDOW_WIDTH = 1000;
 static const unsigned int WINDOW_HEIGHT = 1000;
@@ -104,6 +106,7 @@ void onKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 			default: fprintf(stdout,"Touche non gérée (%d)\n",key);
 		}
 	}
+	
 }
 
 void mouse_mouv(GLFWwindow* window, double xpos, double ypos){
@@ -121,6 +124,7 @@ void mouse_mouv(GLFWwindow* window, double xpos, double ypos){
 	}
 
 }
+
 
 int main(int argc, char** argv)
 {
@@ -154,10 +158,15 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 
 	float profondeur=0.;
-	float vitesse_corridor=0.3;
+	float vitesse_corridor=0.2;
+	float taille = 1000;
+	Ball *ball = initBall(0, 0, 0, -0.2, 0.5, 0., 2);
 
 	positionObstacles(listeObs, NBR_OBSTACLES);
 
+
+	
+	
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
@@ -166,7 +175,7 @@ int main(int argc, char** argv)
 		
 
 		/* Cleaning buffers and setting Matrix Mode */
-		glClearColor(1.0,1.0,1.0,1.0);
+		glClearColor(0.2,0.0,0.0,0.0);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -190,31 +199,28 @@ int main(int argc, char** argv)
 					
 		}
 		profondeur +=  vitesse_corridor;
-			drawCorridor(profondeur);
-			drawball();
-			drawRaquette(newX, newY);
-			for(int i=0; i<NBR_OBSTACLES;i++){
+		
+
+		drawCorridor(profondeur, taille);
+		drawRaquette(newX, newY);
+		drawball(ball);
+		// collisions sol/plafond
+		if(ball->posY< -0.5 * 20 || ball->posY > 0.5 * 20){
+            ball->speedY *= -1;
+        }
+        //colissions murs
+        if(ball->posX < -0.5 * taille|| ball->posX > 0.5 * taille){
+        ball->speedX *= -1;
+    }
+		for(int i=0; i<NBR_OBSTACLES;i++){
 				drawObstacles(profondeur,40*(i+1), listeObs[i]);
 			}
+		
+	
+		
 
 		/* Scene rendering */
-		//drawFrame();
-
-		// glPushMatrix();
-		// glColor3f(1.0,0.0,0.0);
-		// glMatrixMode(GL_MODELVIEW);
 		
-		// glRotatef(startTime*15, 0., 0., 1.);
-		// glTranslatef(4.0,0.0,5.0);
-	
-		// drawSphere();
-		// glPopMatrix();
-
-		// drawBase();
-
-		// drawArm();
-
-		// drawPan();
 		
 		
 		/* Swap front and back buffers */

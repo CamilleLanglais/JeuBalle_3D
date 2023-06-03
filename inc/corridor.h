@@ -12,4 +12,4 @@
 #include <stdio.h>
 #include <math.h>
 
-void drawCorridor(float profondeur);
+void drawCorridor(float profondeur, float taille);

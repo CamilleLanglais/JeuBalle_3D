@@ -160,7 +160,9 @@ int main(int argc, char** argv)
 	float profondeur=0.;
 	float vitesse_corridor=0.2;
 	float taille = 1000;
-	Ball *ball = initBall(0, 0, 0, -0.2, 0.5, 0., 2);
+	Ball *ball = initBall(0, 0, 0, -0.5, 0, 0., 2);
+	int taille2=1/3;
+	bool collision = false;
 
 	positionObstacles(listeObs, NBR_OBSTACLES);
 
@@ -200,23 +202,55 @@ int main(int argc, char** argv)
 		}
 		profondeur +=  vitesse_corridor;
 		
+		
 
 		drawCorridor(profondeur, taille);
 		drawRaquette(newX, newY);
 		drawball(ball);
-		// collisions sol/plafond
+		// collisions balle/sol-plafond
 		if(ball->posY< -0.5 * 20 || ball->posY > 0.5 * 20){
             ball->speedY *= -1;
         }
-        //colissions murs
+        //colissions balle/murs
         if(ball->posX < -0.5 * taille|| ball->posX > 0.5 * taille){
         ball->speedX *= -1;
     }
 		for(int i=0; i<NBR_OBSTACLES;i++){
 				drawObstacles(profondeur,40*(i+1), listeObs[i]);
-			}
-		
+				// float balle=ball->posX;
+				// printf("%f\n",balle);
+				// printf("posObstacle1 : %f\n",profondeur-(40*(0+1))+ ball->speedX);
+				if(ball->posX - ball->radius <= profondeur-(40*(i+1)) && ball->posX + ball->radius >= profondeur-(40*(i+1)) + 1){
+					fprintf(stdout,"collision profondeur,(%d)\n");
+					if(ball->posZ - ball->radius< listeObs[i].x2 && ball->posZ + ball->radius > listeObs[i].x1){
+						fprintf(stdout,"collision largeur,(%d)\n");
+						if(ball->posY- ball->radius < listeObs[i].y1  && ball->posY + ball->radius > listeObs[i].y2){
+							fprintf(stdout,"collision hauteur,(%d)\n");
+							if (ball->speedX <0) ball->speedX *= -1;
+						}
+					}
+				}
+				/*||  ball->posX <= profondeur-(40*(i+1)) -1*/
+			// if(ball->posY  listeObs[i].y1 ){
+			// 	ball->speedY *= -1;
+			// }
+			//x1 et y2 négatifs
+		}
+
+		//collisions balle/raquette
 	
+		if(ball->posX + ball->radius > 0){
+
+			if(ball->posZ- ball->radius< newX+10 && ball->posZ + ball->radius > newX-10 ){
+			if(ball->posY -ball->radius < newY+10 && ball->posY + ball->radius > newY-10){
+				if(ball->speedX > 0){
+					ball->speedX *= -1;
+				}
+		}
+		}
+		}
+		
+		
 		
 
 		/* Scene rendering */

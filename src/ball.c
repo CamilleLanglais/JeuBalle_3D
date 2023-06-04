@@ -4,7 +4,7 @@
 #include "ball.h"
 
 Ball* initBall(float posX,float posY, float posZ, float speedX, float speedY, float speedZ, float radius){
-     Ball* ball = (Ball*)malloc(sizeof(Ball));
+    Ball* ball = (Ball*)malloc(sizeof(Ball));
     ball->posX = posX; 
     ball->posY = posY;  
     ball->posZ = posZ; 
@@ -13,4 +13,4 @@ Ball* initBall(float posX,float posY, float posZ, float speedX, float speedY, fl
     ball->speedZ = speedZ;  
     ball->radius = radius; 
     return ball;
-} Ball;
+};

@@ -190,7 +190,7 @@ int main(int argc, char** argv)
 	float profondeur=0.;
 	float vitesse_corridor=0.2;
 	float taille = 1000;
-	ball = initBall(0, 0, 0, -0.2, 0.5, 0., 2);
+	ball = initBall(0, 0, 0, -0.5, 0, 0., 2);
 	raquette = initRaquette(0,0);
 
 	positionObstacles(listeObs, NBR_OBSTACLES);
@@ -251,11 +251,47 @@ int main(int argc, char** argv)
     	}
 		for(int i=0; i<NBR_OBSTACLES;i++){
 				drawObstacles(profondeur,40*(i+1), listeObs[i]);
+				// float balle=ball->posX;
+				// printf("%f\n",balle);
+				// printf("posObstacle1 : %f\n",profondeur-(40*(0+1))+ ball->speedX);
+				if(ball->posX - ball->radius <= profondeur-(40*(i+1)) && ball->posX + ball->radius >= profondeur-(40*(i+1)) + 1){
+					fprintf(stdout,"collision profondeur,(%d)\n");
+					if(ball->posZ - ball->radius< listeObs[i].x2 && ball->posZ + ball->radius > listeObs[i].x1){
+						fprintf(stdout,"collision largeur,(%d)\n");
+						if(ball->posY- ball->radius < listeObs[i].y1  && ball->posY + ball->radius > listeObs[i].y2){
+							fprintf(stdout,"collision hauteur,(%d)\n");
+							if (ball->speedX <0) ball->speedX *= -1;
+						}
+					}
+				}
+				/*||  ball->posX <= profondeur-(40*(i+1)) -1*/
+			// if(ball->posY  listeObs[i].y1 ){
+			// 	ball->speedY *= -1;
+			// }
+			//x1 et y2 négatifs
 		}
+
+		//collisions balle/raquette
+	
+		if(ball->posX + ball->radius > 0){
+
+			if(ball->posZ- ball->radius< newX+10 && ball->posZ + ball->radius > newX-10 ){
+				if(ball->posY -ball->radius < newY+10 && ball->posY + ball->radius > newY-10){
+					if(ball->speedX > 0){
+						ball->speedX *= -1;
+					}
+				}
+			}
+		}
+		
+		
 		for (int i=1; i<NBR_BONUS;i++){
 			drawBonus(profondeur, 73*(i+1), listeBonus[i]);
 		}
-		 
+
+		/* Scene rendering */
+		
+		
 		
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);

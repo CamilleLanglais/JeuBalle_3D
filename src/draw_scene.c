@@ -14,17 +14,17 @@ void drawball(Ball *ball){
 
 }
 
-void drawFrame(){
-    glBegin(GL_LINES);
-        glColor3f(0.0,1.0,0.0);
-        glVertex3f(0.0,0.0,0.0);
-        glVertex3f(20.0,0.0,0.0);
-        glVertex3f(0.0,0.0,0.0);
-        glVertex3f(0.0,20.0,0.0);
-        glVertex3f(0.0,0.0,0.0);
-        glVertex3f(0.0,0.0,20.0);
-    glEnd();
-}
+// void drawFrame(){
+//     glBegin(GL_LINES);
+//         glColor3f(0.0,1.0,0.0);
+//         glVertex3f(0.0,0.0,0.0);
+//         glVertex3f(20.0,0.0,0.0);
+//         glVertex3f(0.0,0.0,0.0);
+//         glVertex3f(0.0,20.0,0.0);
+//         glVertex3f(0.0,0.0,0.0);
+//         glVertex3f(0.0,0.0,20.0);
+//     glEnd();
+// }
 
 
 

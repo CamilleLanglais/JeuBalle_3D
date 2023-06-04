@@ -2,8 +2,6 @@
 #include "3D_tools.h"
 #include <math.h>
 
-//int nbrObstacles = NBR_OBSTACLES;
-
 
 
 void drawObstacles(float profondeur, float distance, Obstacles obstacle){
@@ -30,7 +28,7 @@ void positionObstacles(Obstacles *liste, int nbrObstacles){
 				taille = 1/3;
 				break;
 			case 1:
-				taille =1/4;
+				taille =1/5;
 				break;
 		}
 		int mur = rand() % 4;
@@ -57,7 +55,7 @@ void positionObstacles(Obstacles *liste, int nbrObstacles){
 				liste[i].y2 = -5;
 				break;
 			case 3 :
-				// Mur du bas
+				// Mur du haut
 				liste[i].x1 = -5*16/9;
 				liste[i].x2 = 5*16/9;
 				liste[i].y1 = 5;

@@ -18,6 +18,7 @@
 #include "ball.h"
 #include "raquette.h"
 #include "obstacles.h"
+#include "bonus.h"
 
 
 
@@ -38,11 +39,17 @@ static int flag_animate_rot_arm = 0;
 double newX = 0.;
 double newY = 0.;
 bool lbutton_down = false;
+bool clickGauche = false;
+bool perdUneVie = true;
 double alpha = 60.0;
 
-#define NBR_OBSTACLES 8
+#define NBR_OBSTACLES 12
+#define NBR_BONUS 5
 
 Obstacles listeObs[NBR_OBSTACLES];
+Bonus listeBonus[NBR_BONUS];
+Ball *ball;
+Raquette *raquette;
 
 /* Error handling function */
 void onError(int error, const char* description)
@@ -111,6 +118,8 @@ void onKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 
 void mouse_mouv(GLFWwindow* window, double xpos, double ypos){
 	glfwGetCursorPos(window, &xpos, &ypos);
+	// newX = xpos;
+	// newY = ypos; 
 	double h = (tan(alpha/2))*2;
 	if(xpos<WINDOW_WIDTH-120 && xpos>120){
 		if(xpos >= 120  && xpos <= WINDOW_WIDTH-120){
@@ -122,7 +131,27 @@ void mouse_mouv(GLFWwindow* window, double xpos, double ypos){
 		newY = ((ypos-(WINDOW_HEIGHT/2.0))*(h/WINDOW_HEIGHT));
 		}
 	}
+	
+}
 
+
+
+void mouse_button(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS){
+		if(perdUneVie == true){
+			ball->speedX = -0.5;
+			ball->speedY = 0.2;
+			ball->speedZ = 0.2;
+			perdUneVie = false;
+		}
+	}
+    if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
+		clickGauche = true;
+	}
+	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE){
+		clickGauche = false;
+	}
 }
 
 
@@ -149,8 +178,9 @@ int main(int argc, char** argv)
 
 	glfwSetWindowSizeCallback(window,onWindowResized);
 	glfwSetKeyCallback(window, onKey);
-	//glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetCursorPosCallback(window, mouse_mouv);
+	glfwSetMouseButtonCallback(window, mouse_button);
+	
 
 	onWindowResized(window,WINDOW_WIDTH,WINDOW_HEIGHT);
 
@@ -160,14 +190,11 @@ int main(int argc, char** argv)
 	float profondeur=0.;
 	float vitesse_corridor=0.2;
 	float taille = 1000;
-	Ball *ball = initBall(0, 0, 0, -0.5, 0, 0., 2);
-	int taille2=1/3;
-	bool collision = false;
+	ball = initBall(0, 0, 0, -0.5, 0, 0., 2);
+	raquette = initRaquette(0,0);
 
 	positionObstacles(listeObs, NBR_OBSTACLES);
-
-
-	
+	positionBonus(listeBonus, NBR_BONUS);
 	
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
@@ -186,35 +213,42 @@ int main(int argc, char** argv)
 		setCamera();
 
 		/* Initial scenery setup */
-		// int profondeur= + vitesse_corridor*elapsedTime;
-		// drawCorridor(profondeur);
 		
 		double elapsedTime = glfwGetTime() - startTime;
 		/* If to few time is spend vs our wanted FPS, we wait */
 		
-
-
 
 		if(elapsedTime < FRAMERATE_IN_SECONDS)
 		{
 			glfwWaitEventsTimeout(FRAMERATE_IN_SECONDS-elapsedTime);
 					
 		}
-		profondeur +=  vitesse_corridor;
-		
-		
+		if(clickGauche==true){
+			profondeur +=  vitesse_corridor;
+		}
+
+		if(perdUneVie==true){
+			ball->posY = newX;
+			ball->posZ = newY+1.5;
+			ball->speedX = 0;
+			ball->speedY = 0;
+			ball->speedZ = 0;
+		}
 
 		drawCorridor(profondeur, taille);
-		drawRaquette(newX, newY);
+		//mouvRaquette(*raquette, aspectRatio, newX, newY, WINDOW_WIDTH, WINDOW_HEIGHT, 16., -9.);
+		drawRaquette(*raquette, newX, newY);
 		drawball(ball);
-		// collisions balle/sol-plafond
+		printf("X : %f, Y : %f, Z : %f\n", ball->posY, ball->posZ, ball->posX); 
+		//collisions murs
 		if(ball->posY< -0.5 * 20 || ball->posY > 0.5 * 20){
             ball->speedY *= -1;
+			
         }
-        //colissions balle/murs
+        // collisions sol/plafond
         if(ball->posX < -0.5 * taille|| ball->posX > 0.5 * taille){
-        ball->speedX *= -1;
-    }
+        	ball->speedX *= -1;
+    	}
 		for(int i=0; i<NBR_OBSTACLES;i++){
 				drawObstacles(profondeur,40*(i+1), listeObs[i]);
 				// float balle=ball->posX;
@@ -242,16 +276,18 @@ int main(int argc, char** argv)
 		if(ball->posX + ball->radius > 0){
 
 			if(ball->posZ- ball->radius< newX+10 && ball->posZ + ball->radius > newX-10 ){
-			if(ball->posY -ball->radius < newY+10 && ball->posY + ball->radius > newY-10){
-				if(ball->speedX > 0){
-					ball->speedX *= -1;
+				if(ball->posY -ball->radius < newY+10 && ball->posY + ball->radius > newY-10){
+					if(ball->speedX > 0){
+						ball->speedX *= -1;
+					}
 				}
-		}
-		}
+			}
 		}
 		
 		
-		
+		for (int i=1; i<NBR_BONUS;i++){
+			drawBonus(profondeur, 73*(i+1), listeBonus[i]);
+		}
 
 		/* Scene rendering */
 		
@@ -264,16 +300,6 @@ int main(int argc, char** argv)
 		glfwPollEvents();
 
 		/* Elapsed time computation from loop begining */
-		// double elapsedTime = glfwGetTime() - startTime;
-		// /* If to few time is spend vs our wanted FPS, we wait */
-		// // profondeur +=  vitesse_corridor*elapsedTime;
-		
-		
-		// if(elapsedTime < FRAMERATE_IN_SECONDS)
-		// {
-		// 	glfwWaitEventsTimeout(FRAMERATE_IN_SECONDS-elapsedTime);
-		// }
-		
 		
 		
 

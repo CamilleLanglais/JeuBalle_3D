@@ -20,13 +20,15 @@
 #include "obstacles.h"
 #include "bonus.h"
 
-
+#include <GLFW/glfw3.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 
 /* Window properties */
 static const unsigned int WINDOW_WIDTH = 1000;
 static const unsigned int WINDOW_HEIGHT = 1000;
-static const char WINDOW_TITLE[] = "Projet";
+static const char WINDOW_TITLE[] = "IMAC Light Corridor";
 static float aspectRatio = 1.0;
 
 /* Minimal time wanted between two images */
@@ -40,14 +42,32 @@ double newX = 0.;
 double newY = 0.;
 bool lbutton_down = false;
 bool clickGauche = false;
-bool perdUneVie = true;
+bool perdUneVie = false;
+bool debutBall = true;
+bool prendSpecialBonus = false;
+bool takeBonus = false;
 double alpha = 60.0;
 
 #define NBR_OBSTACLES 12
 #define NBR_BONUS 5
 
+GLuint textureID;
+GLFWwindow* window;
+int showMenu = 1; // Variable pour afficher ou masquer le menu
+int perdu = 0; // Variable pour afficher ou masquer le menu pour le perdant
+int gagne = 0; // Variable pour afficher ou masquer le menu pour le gagnant
+
+typedef struct MenuList {
+    GLuint textureID;
+    float xPos;
+    float yPos;
+    float width;
+    float height;
+} MenuList;
+
 Obstacles listeObs[NBR_OBSTACLES];
 Bonus listeBonus[NBR_BONUS];
+MenuList listeMenu[3];
 Ball *ball;
 Raquette *raquette;
 
@@ -68,11 +88,55 @@ void onWindowResized(GLFWwindow* window, int width, int height)
 	glMatrixMode(GL_MODELVIEW);
 }
 
+
+void drawMenuList(MenuList* liste) {
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, liste->textureID);
+
+    glPushMatrix();
+		glTranslatef(1.5, 0., 0.);
+		glScalef(0.,5.,5.);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0, 0);
+			glVertex3f(0, -1, -1);
+			glTexCoord2f(1, 0);
+			glVertex3f(0, 1, -1);
+			glTexCoord2f(1, 1);
+			glVertex3f(0, 1, 1);
+			glTexCoord2f(0, 1);
+			glVertex3f(0, -1, 1);
+		glEnd();
+	glPopMatrix();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+}
+
+void loadTexture(MenuList* liste, const char* filename) {
+    int width, height, channels;
+    stbi_set_flip_vertically_on_load(1);
+    unsigned char* image = stbi_load(filename, &width, &height, &channels, STBI_rgb_alpha);
+
+    glGenTextures(1, &(liste->textureID));
+    glBindTexture(GL_TEXTURE_2D, liste->textureID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
+    stbi_image_free(image);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void onKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (action == GLFW_PRESS) {
 		switch(key) {
 			case GLFW_KEY_A :
+			case GLFW_KEY_J :
+				showMenu = 0;
+				break;
 			case GLFW_KEY_ESCAPE :
 				glfwSetWindowShouldClose(window, GLFW_TRUE);
 				break;
@@ -134,26 +198,34 @@ void mouse_mouv(GLFWwindow* window, double xpos, double ypos){
 	
 }
 
-
-
 void mouse_button(GLFWwindow* window, int button, int action, int mods)
 {
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS){
-		if(perdUneVie == true){
-			ball->speedX = -0.5;
-			ball->speedY = 0.2;
-			ball->speedZ = 0.2;
-			perdUneVie = false;
+	if(!showMenu || !perdu || !gagne){
+		if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS){
+			if(perdUneVie == true || prendSpecialBonus == true || debutBall == true){
+				ball->speedX = -0.5;
+				ball->speedY = 0.2;
+				ball->speedZ = 0.;
+				perdUneVie = false;
+				prendSpecialBonus = false;
+				debutBall = false;
+			}
+		}
+		if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
+			clickGauche = true;
+		}
+		if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE){
+			clickGauche = false;
 		}
 	}
-    if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
-		clickGauche = true;
-	}
-	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE){
-		clickGauche = false;
-	}
+    
 }
 
+void framebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+    // Rétablir la taille de la fenêtre à sa valeur initiale
+    glfwSetWindowSize(window, WINDOW_WIDTH, WINDOW_HEIGHT);
+}
 
 int main(int argc, char** argv)
 {
@@ -173,6 +245,10 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
+	// Désactiver le redimensionnement de la fenêtre
+    glfwSetWindowSizeLimits(window, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT);
+	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
 
@@ -180,7 +256,6 @@ int main(int argc, char** argv)
 	glfwSetKeyCallback(window, onKey);
 	glfwSetCursorPosCallback(window, mouse_mouv);
 	glfwSetMouseButtonCallback(window, mouse_button);
-	
 
 	onWindowResized(window,WINDOW_WIDTH,WINDOW_HEIGHT);
 
@@ -195,6 +270,12 @@ int main(int argc, char** argv)
 
 	positionObstacles(listeObs, NBR_OBSTACLES);
 	positionBonus(listeBonus, NBR_BONUS);
+	srand(time(NULL));
+
+	//Charger les textures
+	loadTexture(&listeMenu[0], "img/Menu.png");
+    loadTexture(&listeMenu[1], "img/MenuG.png");
+    loadTexture(&listeMenu[2], "img/MenuP.png");
 	
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
@@ -216,7 +297,22 @@ int main(int argc, char** argv)
 		
 		double elapsedTime = glfwGetTime() - startTime;
 		/* If to few time is spend vs our wanted FPS, we wait */
-		
+
+		if (showMenu) {
+            drawMenuList(&listeMenu[0]);
+        }
+
+		if (gagne) {
+            drawMenuList(&listeMenu[1]);
+        }
+
+		if (perdu) {
+            drawMenuList(&listeMenu[2]);
+        }
+
+		if(debutBall==true){
+			colleRaquette(ball, newX, newY);
+		}
 
 		if(elapsedTime < FRAMERATE_IN_SECONDS)
 		{
@@ -228,18 +324,24 @@ int main(int argc, char** argv)
 		}
 
 		if(perdUneVie==true){
-			ball->posY = newX;
-			ball->posZ = newY+1.5;
-			ball->speedX = 0;
-			ball->speedY = 0;
-			ball->speedZ = 0;
+			colleRaquette(ball, newX, newY);
+			raquette->nbrVie -= 1;
 		}
+
+		if(raquette->nbrVie==0){
+			perdu = 1;
+		}
+
+		// if(takeBonus==true){
+		// 	prendSpecialBonus = collisionBonus(bonus, ball, raquette, newX, newY);
+		// 	supprimerBonusCollision(listeBonus, NBR_BONUS, INDEXAMETTRE);
+		// }
 
 		drawCorridor(profondeur, taille);
 		//mouvRaquette(*raquette, aspectRatio, newX, newY, WINDOW_WIDTH, WINDOW_HEIGHT, 16., -9.);
 		drawRaquette(*raquette, newX, newY);
 		drawball(ball);
-		printf("X : %f, Y : %f, Z : %f\n", ball->posY, ball->posZ, ball->posX); 
+		//printf("X : %f, Y : %f, Z : %f\n", ball->posY, ball->posZ, ball->posX); 
 		//collisions murs
 		if(ball->posY< -0.5 * 20 || ball->posY > 0.5 * 20){
             ball->speedY *= -1;
@@ -255,11 +357,11 @@ int main(int argc, char** argv)
 				// printf("%f\n",balle);
 				// printf("posObstacle1 : %f\n",profondeur-(40*(0+1))+ ball->speedX);
 				if(ball->posX - ball->radius <= profondeur-(40*(i+1)) && ball->posX + ball->radius >= profondeur-(40*(i+1)) + 1){
-					fprintf(stdout,"collision profondeur,(%d)\n");
+					//fprintf(stdout,"collision profondeur,(%d)\n");
 					if(ball->posZ - ball->radius< listeObs[i].x2 && ball->posZ + ball->radius > listeObs[i].x1){
-						fprintf(stdout,"collision largeur,(%d)\n");
+						//fprintf(stdout,"collision largeur,(%d)\n");
 						if(ball->posY- ball->radius < listeObs[i].y1  && ball->posY + ball->radius > listeObs[i].y2){
-							fprintf(stdout,"collision hauteur,(%d)\n");
+							//fprintf(stdout,"collision hauteur,(%d)\n");
 							if (ball->speedX <0) ball->speedX *= -1;
 						}
 					}
@@ -284,9 +386,11 @@ int main(int argc, char** argv)
 			}
 		}
 		
-		
 		for (int i=1; i<NBR_BONUS;i++){
-			drawBonus(profondeur, 73*(i+1), listeBonus[i]);
+			glPushMatrix();
+				//glRotatef(2.*glfwGetTime(), 1.0, 0.0, 0.0);
+				drawBonus(profondeur, 73*(i+1), listeBonus[i]);
+			glPopMatrix();
 		}
 
 		/* Scene rendering */

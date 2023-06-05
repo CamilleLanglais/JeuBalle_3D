@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <math.h>
 
+
 typedef struct Ball{
     float posX;
     float posY;
@@ -23,3 +24,5 @@ typedef struct Ball{
 }Ball;
 
 Ball* initBall(float posX,float posY, float posZ, float speedX, float speedY, float speedZ, float radius);
+
+void colleRaquette(Ball *ball, float newX, float newY);

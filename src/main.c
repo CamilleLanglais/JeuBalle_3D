@@ -93,7 +93,7 @@ void onWindowResized(GLFWwindow* window, int width, int height)
 void drawMenuList(MenuList* liste) {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, liste->textureID);
-
+	glColor3f(1.,1.,1.);
     glPushMatrix();
 		glTranslatef(1.5, 0., 0.);
 		glScalef(0.,5.,5.);
@@ -135,6 +135,8 @@ void onKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 	if (action == GLFW_PRESS) {
 		switch(key) {
 			case GLFW_KEY_A :
+				glfwSetWindowShouldClose(window, GLFW_TRUE);
+				break;
 			case GLFW_KEY_J :
 				showMenu = 0;
 				break;
@@ -274,7 +276,7 @@ int main(int argc, char** argv)
 
 	positionObstacles(listeObs, NBR_OBSTACLES);
 	positionBonus(listeBonus, NBR_BONUS);
-	srand(time(NULL));
+	
 
 	//Charger les textures
 	loadTexture(&listeMenu[0], "img/Menu.png");
@@ -284,6 +286,7 @@ int main(int argc, char** argv)
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
+		srand(time(NULL));
 		/* Get time (in second) at loop beginning */
 		double startTime = glfwGetTime();
 		
@@ -374,7 +377,7 @@ int main(int argc, char** argv)
 			//x1 et y2 négatifs
 		}
 
-		if(-(ball->posX)>(listeObs[2].positionProf)){
+		if(-(ball->posX)>(listeObs[NBR_OBSTACLES-1].positionProf)){
 			gagne = 1;
 		}
 
@@ -405,21 +408,27 @@ int main(int argc, char** argv)
 		bool test;
 		
 		for (int i=1; i<NBR_BONUS;i++){
+			int distance = 73*(i+1);
 			glPushMatrix();
 				//glRotatef(2.*glfwGetTime(), 1.0, 0.0, 0.0);
-				drawBonus(profondeur, 73*(i+1), listeBonus[i]);
+				drawBonus(profondeur, distance, listeBonus[i]);
 			glPopMatrix();
-		// collisions balle/bonus
-			if(ball->posX - ball->radius <= profondeur-(73*(i+1)) && ball->posX + ball->radius >= profondeur-(73*(i+1)) + 1){
+			// collisions balle/bonus
+			if(-(ball->posX - ball->radius) <= distance - profondeur && -(ball->posX + ball->radius) >= distance - profondeur){
+				printf("%s\n", "2 Ca passe !");
 				if(ball->posZ - ball->radius< listeBonus[i].x1 && ball->posZ + ball->radius > listeBonus[i].x2){
 					if(ball->posY + ball->radius  <= listeBonus[i].y2   && ball->posY - ball->radius +1 >= listeBonus[i].y1){
-						estColle = collisionBonus(&listeBonus[i], ball, raquette, newX, newY);
+						test=true;
+						printf("Test : %d\n", test);
+						/*estColle = collisionBonus(&listeBonus[i], ball, raquette, newX, newY);
 						printf("Colle : %d\n", estColle);
-						printf("%s\n", "Ca passe !");
+						printf("%s\n", "Ca passe !");*/
 					}
 				}
 			}
 		}
+
+		
 
 		/* Scene rendering */
 		

@@ -204,7 +204,7 @@ void mouse_button(GLFWwindow* window, int button, int action, int mods)
 		if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS){
 			if(perdUneVie == true || prendSpecialBonus == true || debutBall == true){
 				ball->speedX = -0.5;
-				ball->speedY = 0.2;
+				ball->speedY = 0.;
 				ball->speedZ = 0.;
 				perdUneVie = false;
 				prendSpecialBonus = false;
@@ -265,7 +265,7 @@ int main(int argc, char** argv)
 	float profondeur=0.;
 	float vitesse_corridor=0.2;
 	float taille = 1000;
-	ball = initBall(0, 0, 0, -0.5, 0, 0., 2);
+	ball = initBall(0, 0, 0, -0.5, 0., 0., 2);
 	raquette = initRaquette(0,0);
 
 	positionObstacles(listeObs, NBR_OBSTACLES);
@@ -343,12 +343,14 @@ int main(int argc, char** argv)
 		drawball(ball);
 		//printf("X : %f, Y : %f, Z : %f\n", ball->posY, ball->posZ, ball->posX); 
 		//collisions murs
-		if(ball->posY< -0.5 * 20 || ball->posY > 0.5 * 20){
-            ball->speedY *= -1;
+		if(ball->posY - ball->radius < -0.5 * 20 || ball->posY + ball->radius > 0.5 * 20){
+            
+        	ball->speedY*= -1;
 			
         }
         // collisions sol/plafond
-        if(ball->posX < -0.5 * taille|| ball->posX > 0.5 * taille){
+        if(ball->posX - ball->radius < -0.5 * taille || ball->posX  + ball->radius> 0.5 * taille){
+			if(ball->speedX > 0)
         	ball->speedX *= -1;
     	}
 		for(int i=0; i<NBR_OBSTACLES;i++){
@@ -374,23 +376,40 @@ int main(int argc, char** argv)
 		}
 
 		//collisions balle/raquette
-	
+		
 		if(ball->posX + ball->radius > 0){
 
-			if(ball->posZ- ball->radius< newX+10 && ball->posZ + ball->radius > newX-10 ){
-				if(ball->posY -ball->radius < newY+10 && ball->posY + ball->radius > newY-10){
-					if(ball->speedX > 0){
-						ball->speedX *= -1;
+			if(ball->posZ- ball->radius< newX && ball->posZ + ball->radius > newX ){
+				if(ball->posY -ball->radius < newY+raquette->y+1  && ball->posY + ball->radius > newY-raquette->y-1 ){
+					if(ball->posZ - ball->radius < raquette->x+1  && ball->posZ + ball->radius > raquette -> x+1 ){
+						if(ball->posY - ball->radius < raquette->y+1 && ball->posY + ball->radius > raquette->y-1){
+								if(ball->speedX > 0){
+									ball->speedX *= -1;
+								}
+						}
 					}
+					
 				}
 			}
+			else{
+
+			}
 		}
+		bool test;
 		
 		for (int i=1; i<NBR_BONUS;i++){
 			glPushMatrix();
 				//glRotatef(2.*glfwGetTime(), 1.0, 0.0, 0.0);
 				drawBonus(profondeur, 73*(i+1), listeBonus[i]);
 			glPopMatrix();
+		// collisions balle/bonus
+			if(ball->posX - ball->radius <= profondeur-(73*(i+1)) && ball->posX + ball->radius >= profondeur-(73*(i+1)) + 1){
+				if(ball->posZ - ball->radius< listeBonus[i].x1 && ball->posZ + ball->radius > listeBonus[i].x2){
+						if(ball->posY + ball->radius  <= listeBonus[i].y2   && ball->posY - ball->radius +1 >= listeBonus[i].y1){
+							test=true;
+						}
+					}
+				}
 		}
 
 		/* Scene rendering */

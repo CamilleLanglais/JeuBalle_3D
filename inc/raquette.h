@@ -16,6 +16,8 @@ typedef struct Raquette{
     float x;
     float y;
     int nbrVie;
+    int width;
+    int height;
 } Raquette;
 
 Raquette* initRaquette(float x, float y);

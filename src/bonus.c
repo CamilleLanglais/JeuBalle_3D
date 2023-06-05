@@ -5,7 +5,8 @@
 #include "time.h"
 
 void drawBonus(float profondeur, float distance, Bonus bonus){
-	glPushMatrix();
+    if(bonus.visible){
+        glPushMatrix();
 		glTranslatef(profondeur-distance, 0., 0.);
 		glScalef(1., 1., 1.);
         if(bonus.typeBonus=='t'){
@@ -33,11 +34,13 @@ void drawBonus(float profondeur, float distance, Bonus bonus){
 			    glVertex3f(0.0,bonus.x1,bonus.y1);
 		    glEnd();*/
         }
-    glPopMatrix();	
+        glPopMatrix();	
+    }
 }
 
 void positionBonus(Bonus *liste, int nbrBonus){
     for(int i = 0; i<nbrBonus;i++){
+        liste[i].visible = true;
         int rdTypeBonus = rand()%2;
         switch(rdTypeBonus){
             case 0:
@@ -50,7 +53,7 @@ void positionBonus(Bonus *liste, int nbrBonus){
         //Initialiser le générateur de nombre aléatoire avec la graine
         int rdPos = 0;
         int rdAll = rand() % 100;
-        
+        printf("Nique ton père : %d\n", rdAll);
         if(rdAll <25){
             rdPos = 0;
         } else if(rdAll>=25 && rdAll<50){
@@ -60,7 +63,7 @@ void positionBonus(Bonus *liste, int nbrBonus){
         } else{
             rdPos = 3;
         }
-        printf("%d\n", rdPos);
+        printf("Nique ta mère : %d\n", rdPos);
         switch(rdPos){
             case 0 :
                 //Bonus à gauche, milieu
@@ -126,27 +129,14 @@ void positionBonus(Bonus *liste, int nbrBonus){
     }
 }
 
-bool collisionBonus(Bonus bonus, Ball ball, Raquette raquette, float newX, float newY){
+bool collisionBonus(Bonus *bonus, Ball *ball, Raquette *raquette, float newX, float newY){
     bool typeBonus = false;
-    if (bonus.typeBonus == 'c'){
-        colleRaquette(&ball, newX, newY);
+    if (bonus->typeBonus == 'c'){
+        colleRaquette(ball, newX, newY);
         typeBonus = true;
     } else{
-        raquette.nbrVie +=1;
+        raquette->nbrVie +=1;
     }
+    bonus->visible = false;
     return typeBonus;
-}
-
-void supprimerBonusCollision(Bonus* liste, int tailleTableau, int indexBonus) {
-    int indiceBonusASupprimer = -1;
-    // Recherche de l'indice du bonus avec le type de collision spécifié
-    for (int i = 0; i < tailleTableau; i++) {
-        if (liste[i].typeBonus == indexBonus) {
-            indiceBonusASupprimer = i;
-            break;
-        }
-    }
-
-    // Utilisation de memmove pour déplacer les éléments suivants
-    memmove(&liste[indiceBonusASupprimer], &liste[indiceBonusASupprimer + 1], (tailleTableau - indiceBonusASupprimer - 1) * sizeof(Bonus));
 }

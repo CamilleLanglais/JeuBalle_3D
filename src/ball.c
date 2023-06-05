@@ -18,7 +18,7 @@ Ball* initBall(float posX,float posY, float posZ, float speedX, float speedY, fl
 void colleRaquette(Ball *ball, float newX, float newY){
     ball->posY = newX;
     ball->posZ = newY+1.5;
-    ball->posX = -1.;
+    ball->posX = -2.;
     ball->speedX = 0;
     ball->speedY = 0;
     ball->speedZ = 0;

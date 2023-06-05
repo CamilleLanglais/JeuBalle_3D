@@ -3,17 +3,16 @@
 #include <math.h>
 
 
-
 void drawObstacles(float profondeur, float distance, Obstacles obstacle){
 	glPushMatrix();
 		glTranslatef(profondeur-distance, 0., 0.);
 		glScalef(1., 16/9., 1.);
 		glColor3f(232/255.0,1.0,183/255.0);
-		glBegin(GL_QUADS);
-			glVertex3f(0.0,obstacle.x1,obstacle.y2);  //bas gauche
-			glVertex3f(0.0,obstacle.x2,obstacle.y2);  //bas droit
-			glVertex3f(0.0,obstacle.x2,obstacle.y1);  // haut droit
-			glVertex3f(0.0,obstacle.x1,obstacle.y1);  // haut gauche
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3f(0.0,obstacle.x1,obstacle.y2);
+			glVertex3f(0.0,obstacle.x2,obstacle.y2);
+			glVertex3f(0.0,obstacle.x2,obstacle.y1);
+			glVertex3f(0.0,obstacle.x1,obstacle.y1);
 		glEnd();
     glPopMatrix();
 	

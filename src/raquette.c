@@ -10,9 +10,9 @@ Raquette* initRaquette(float x, float y){
 	return raquette;
 }
 
-void drawRaquette(Raquette raquette, float x, float y){
-	raquette.x = x;
-	raquette.y = y;
+void drawRaquette(Raquette * raquette, float x, float y){
+	raquette->x = x;
+	raquette->y = y;
     glBegin(GL_LINES);
         glColor3f(226/255.0,160/255.0,1.0);
 		glVertex3f(0.0,x+1.0,y-1.0);

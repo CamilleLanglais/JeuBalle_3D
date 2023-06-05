@@ -22,4 +22,6 @@ typedef struct Raquette{
 
 Raquette* initRaquette(float x, float y);
 
-void drawRaquette(Raquette raquette, float x, float y);
+void drawRaquette(Raquette * raquette, float x, float y);
+
+void mouvRaquette(Raquette raquette, float aspectRatio, float xpos, float ypos, float windowWidth, float windowHeight, float corridorWidth, float corridorHeight);

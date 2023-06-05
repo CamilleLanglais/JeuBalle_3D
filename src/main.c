@@ -46,7 +46,7 @@ bool perdUneVie = false;
 bool debutBall = true;
 bool prendSpecialBonus = false;
 bool takeBonus = false;
-double alpha = 60.0;
+double alpha = 60;
 
 #define NBR_OBSTACLES 12
 #define NBR_BONUS 5
@@ -204,7 +204,7 @@ void mouse_button(GLFWwindow* window, int button, int action, int mods)
 		if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS){
 			if(perdUneVie == true || prendSpecialBonus == true || debutBall == true){
 				ball->speedX = -0.5;
-				ball->speedY = 0.;
+				ball->speedY = 0.1;
 				ball->speedZ = 0.;
 				perdUneVie = false;
 				prendSpecialBonus = false;
@@ -270,7 +270,7 @@ int main(int argc, char** argv)
 
 	positionObstacles(listeObs, NBR_OBSTACLES);
 	positionBonus(listeBonus, NBR_BONUS);
-	srand(time(NULL));
+	// srand(time(NULL));
 
 	//Charger les textures
 	loadTexture(&listeMenu[0], "img/Menu.png");
@@ -339,62 +339,70 @@ int main(int argc, char** argv)
 
 		drawCorridor(profondeur, taille);
 		//mouvRaquette(*raquette, aspectRatio, newX, newY, WINDOW_WIDTH, WINDOW_HEIGHT, 16., -9.);
-		drawRaquette(*raquette, newX, newY);
+		drawRaquette(raquette, newX, newY);
+		printf("%f\n",raquette->y);
 		drawball(ball);
 		//printf("X : %f, Y : %f, Z : %f\n", ball->posY, ball->posZ, ball->posX); 
-		//collisions murs
-		if(ball->posY - ball->radius < -0.5 * 20 || ball->posY + ball->radius > 0.5 * 20){
+		//collisionsmurs
+		if(ball->posY - ball->radius < -0.5 * 14 || ball->posY + ball->radius > 0.5 * 14){
             
         	ball->speedY*= -1;
 			
         }
         // collisions sol/plafond
-        if(ball->posX - ball->radius < -0.5 * taille || ball->posX  + ball->radius> 0.5 * taille){
-			if(ball->speedX > 0)
-        	ball->speedX *= -1;
+        if(ball->posZ - ball->radius < -0.5 * 10 || ball->posZ  + ball->radius> 0.5 * 18){
+			//if(ball->speedZ > 0)
+        	ball->speedZ *= -1;
     	}
 		for(int i=0; i<NBR_OBSTACLES;i++){
 				drawObstacles(profondeur,40*(i+1), listeObs[i]);
 				// float balle=ball->posX;
 				// printf("%f\n",balle);
 				// printf("posObstacle1 : %f\n",profondeur-(40*(0+1))+ ball->speedX);
+
+				//collision balle/obstacle
 				if(ball->posX - ball->radius <= profondeur-(40*(i+1)) && ball->posX + ball->radius >= profondeur-(40*(i+1)) + 1){
 					//fprintf(stdout,"collision profondeur,(%d)\n");
-					if(ball->posZ - ball->radius< listeObs[i].x2 && ball->posZ + ball->radius > listeObs[i].x1){
+					if(ball->posY - ball->radius< listeObs[i].x2 && ball->posY + ball->radius > listeObs[i].x1){
 						//fprintf(stdout,"collision largeur,(%d)\n");
-						if(ball->posY- ball->radius < listeObs[i].y1  && ball->posY + ball->radius > listeObs[i].y2){
+						if(ball->posZ- ball->radius < listeObs[i].y1  && ball->posZ + ball->radius > listeObs[i].y2){
 							//fprintf(stdout,"collision hauteur,(%d)\n");
 							if (ball->speedX <0) ball->speedX *= -1;
 						}
 					}
 				}
-				/*||  ball->posX <= profondeur-(40*(i+1)) -1*/
-			// if(ball->posY  listeObs[i].y1 ){
-			// 	ball->speedY *= -1;
-			// }
-			//x1 et y2 négatifs
-		}
 
+					//collision raquette/obstacle
+
+					if(0 <= profondeur-(40*(i+1)) && 0 >= profondeur-(40*(i+1)) + 1){
+					//fprintf(stdout,"collision profondeur,(%d)\n");
+						if((newX + 1)< listeObs[i].x2 && (newX - 1) > listeObs[i].x1){
+						//fprintf(stdout,"collision largeur,(%d)\n");
+							if((newY + 1) < listeObs[i].y1  && (newY-1) > listeObs[i].y2){
+							//fprintf(stdout,"collision hauteur,(%d)\n");
+							if (ball->speedX <0) clickGauche = false;
+							}
+						}
+					}
+		
+		}
 		//collisions balle/raquette
 		
 		if(ball->posX + ball->radius > 0){
-
-			if(ball->posZ- ball->radius< newX && ball->posZ + ball->radius > newX ){
-				if(ball->posY -ball->radius < newY+raquette->y+1  && ball->posY + ball->radius > newY-raquette->y-1 ){
-					if(ball->posZ - ball->radius < raquette->x+1  && ball->posZ + ball->radius > raquette -> x+1 ){
-						if(ball->posY - ball->radius < raquette->y+1 && ball->posY + ball->radius > raquette->y-1){
+				if(ball->posZ - ball->radius  < (newY+ 1)  &&  ball->posZ + ball->radius > (newY - 1 ) ){
+					if(ball->posY - ball->radius < (newX + 1)  && ball->posY + ball->radius > (newX - 1) ){
+						
 								if(ball->speedX > 0){
 									ball->speedX *= -1;
 								}
-						}
 					}
-					
 				}
-			}
+					
+		}		
 			else{
 
 			}
-		}
+		
 		bool test;
 		
 		for (int i=1; i<NBR_BONUS;i++){
@@ -402,15 +410,20 @@ int main(int argc, char** argv)
 				//glRotatef(2.*glfwGetTime(), 1.0, 0.0, 0.0);
 				drawBonus(profondeur, 73*(i+1), listeBonus[i]);
 			glPopMatrix();
-		// collisions balle/bonus
-			if(ball->posX - ball->radius <= profondeur-(73*(i+1)) && ball->posX + ball->radius >= profondeur-(73*(i+1)) + 1){
-				if(ball->posZ - ball->radius< listeBonus[i].x1 && ball->posZ + ball->radius > listeBonus[i].x2){
-						if(ball->posY + ball->radius  <= listeBonus[i].y2   && ball->posY - ball->radius +1 >= listeBonus[i].y1){
+		// collisions raquette/bonus
+			if(0<= profondeur-(73*(i+1)) && 0 >= profondeur-(73*(i+1)) + 1){
+				if(newX - 1 > listeBonus[i].x1 && newX+1 < listeBonus[i].x2){
+						if(newY - 1  >= listeBonus[i].y2   && newY+1  <= listeBonus[i].y1){
 							test=true;
+							printf("%f\n",test);
 						}
-					}
 				}
+			}
 		}
+
+		
+
+
 
 		/* Scene rendering */
 		
@@ -432,3 +445,4 @@ int main(int argc, char** argv)
 	glfwTerminate();
 	return 0;
 }
+

@@ -385,6 +385,10 @@ int main(int argc, char** argv)
 					}
 		
 		}
+
+		if(-(ball->posX)>(listeObs[NBR_OBSTACLES-1].positionProf)){
+			gagne = 1;
+		}
 		//collisions balle/raquette
 		
 		if(ball->posX + ball->radius > 0){
@@ -395,16 +399,24 @@ int main(int argc, char** argv)
 									ball->speedX *= -1;
 								}
 					}
-				}
+					else{
+						estColle = true;
+						perdUneVie = false;
+						raquette->nbrVie -= 1;
 					
-		}		
-			else{
+						printf("%d\n", raquette->nbrVie);
+					}
+				}
+						else{
 				estColle = true;
 				perdUneVie = false;
 				raquette->nbrVie -= 1;
 			
 				printf("%d\n", raquette->nbrVie);
 			}
+					
+		}		
+			
 		
 		bool test;
 		

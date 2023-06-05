@@ -9,30 +9,20 @@ void drawBonus(float profondeur, float distance, Bonus bonus){
         glPushMatrix();
 		glTranslatef(profondeur-distance, 0., 0.);
 		glScalef(1., 1., 1.);
+        // Si le typeBonus est égale à 't' on défini une couleur particulière
         if(bonus.typeBonus=='t'){
             glColor3f(226/255.0,160/255.0, 1.0);
             glPushMatrix();
                 glTranslatef(0., bonus.xtransl, bonus.ytransl);
                 drawCone();
             glPopMatrix();
-            /*glBegin(GL_TRIANGLE_FAN);
-			    glVertex3f(0.0,bonus.x1,bonus.y2);
-			    glVertex3f(0.0,bonus.x2,bonus.y2);
-			    glVertex3f(0.0,bonus.x2,bonus.y1);
-			    glVertex3f(0.0,bonus.x1,bonus.y1);
-		    glEnd();*/
         } else{
+            // On définit une seconde couleur pour le deuxième bonus
             glColor3f(1.0,1.0, 1.0);
             glPushMatrix();
                 glTranslatef(0., bonus.xtransl, bonus.ytransl);
                 drawCone();
             glPopMatrix();
-            /*glBegin(GL_TRIANGLE_FAN);
-			    glVertex3f(0.0,bonus.x1,bonus.y2);
-			    glVertex3f(0.0,bonus.x2,bonus.y2);
-			    glVertex3f(0.0,bonus.x2,bonus.y1);
-			    glVertex3f(0.0,bonus.x1,bonus.y1);
-		    glEnd();*/
         }
         glPopMatrix();	
     }
@@ -41,6 +31,7 @@ void drawBonus(float profondeur, float distance, Bonus bonus){
 void positionBonus(Bonus *liste, int nbrBonus){
     for(int i = 0; i<nbrBonus;i++){
         liste[i].visible = true;
+        // On donne aléatoirement le type de bonus
         int rdTypeBonus = rand()%2;
         switch(rdTypeBonus){
             case 0:
@@ -50,20 +41,8 @@ void positionBonus(Bonus *liste, int nbrBonus){
                 liste[i].typeBonus = 't';
                 break;
         }
-        //Initialiser le générateur de nombre aléatoire avec la graine
-        int rdPos = 0;
-        int rdAll = rand() % 100;
-        printf("Nique ton père : %d\n", rdAll);
-        if(rdAll <25){
-            rdPos = 0;
-        } else if(rdAll>=25 && rdAll<50){
-            rdPos = 1;
-        } else if(rdAll>=50 && rdAll<75){
-            rdPos = 2;
-        } else{
-            rdPos = 3;
-        }
-        printf("Nique ta mère : %d\n", rdPos);
+        //On donne aléatoirement la position du bonus
+        int rdPos = rand() % 4;
         switch(rdPos){
             case 0 :
                 //Bonus à gauche, milieu
@@ -73,12 +52,6 @@ void positionBonus(Bonus *liste, int nbrBonus){
                 liste[i].y2 = -1;
                 liste[i].xtransl = -4;
                 liste[i].ytransl = 0;
-                // if(liste[i].typeBonus=='c'){
-                //     liste[i].xtransl = -4;
-                //     liste[i].ytransl = 1.5;
-                // } else{
-                    
-                // }
                 break;
             case 1 :
                 //Bonus à droit, milieu
@@ -88,12 +61,6 @@ void positionBonus(Bonus *liste, int nbrBonus){
                 liste[i].y2 = -1;
                 liste[i].xtransl = 4;
                 liste[i].ytransl = -0.5;
-                // if(liste[i].typeBonus=='c'){
-                //     liste[i].xtransl = 3.5;
-                //     liste[i].ytransl = 1.5;
-                // } else{
-                
-                // }
                 break;
             case 2 :
                 //Bonus en haut, milieu
@@ -103,12 +70,6 @@ void positionBonus(Bonus *liste, int nbrBonus){
                 liste[i].y2 = 2;
                 liste[i].xtransl = 0;
                 liste[i].ytransl = 2.5;
-                // if(liste[i].typeBonus=='c'){
-                //     liste[i].xtransl = 0;
-                //     liste[i].ytransl = 4.5;
-                // } else{
-                    
-                // }
                 break;
             case 3 :
                 //Bonus en bas, milieu
@@ -118,25 +79,21 @@ void positionBonus(Bonus *liste, int nbrBonus){
                 liste[i].y2 = -4;
                 liste[i].xtransl = 0;
                 liste[i].ytransl = -3;
-                // if(liste[i].typeBonus=='c'){
-                //     liste[i].xtransl = 0;
-                //     liste[i].ytransl = -4;
-                // } else{
-                    
-                // }
                 break;
         }
     }
 }
 
 bool collisionBonus(Bonus *bonus, Ball *ball, Raquette *raquette, float newX, float newY){
-    bool typeBonus = false;
+    bool valeurBonus = false;
     if (bonus->typeBonus == 'c'){
         colleRaquette(ball, newX, newY);
-        typeBonus = true;
+        valeurBonus = true;
     } else{
-        raquette->nbrVie +=1;
+        if(raquette->nbrVie<5){
+            raquette->nbrVie +=1;
+        }
     }
     bonus->visible = false;
-    return typeBonus;
+    return valeurBonus;
 }

@@ -20,7 +20,7 @@ void drawCorridor(float profondeur, float taille){
 		drawSquareXZ();
     glPopMatrix();
 
-// mur droit
+	// mur droit
 	glPushMatrix();
 		glTranslatef(profondeur, 10., 0.);
 		glScalef(taille, 0.5, 30.);

@@ -47,6 +47,7 @@ bool debutBall = true;
 bool prendSpecialBonus = false;
 bool takeBonus = false;
 bool estColle = true;
+bool raquetteBlock = false;
 double alpha = 60.0;
 
 #define NBR_OBSTACLES 12
@@ -66,11 +67,17 @@ typedef struct MenuList {
     float height;
 } MenuList;
 
+typedef struct VieList{
+	GLuint textureID;
+	int nbVie;
+} VieList;
+
 Obstacles listeObs[NBR_OBSTACLES];
 Bonus listeBonus[NBR_BONUS];
 MenuList listeMenu[3];
 Ball *ball;
 Raquette *raquette;
+VieList listeVie[5];
 
 /* Error handling function */
 void onError(int error, const char* description)
@@ -108,12 +115,50 @@ void drawMenuList(MenuList* liste) {
 			glVertex3f(0, -1, 1);
 		glEnd();
 	glPopMatrix();
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+}
 
+void drawVie(VieList* liste, float decalage) {
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, liste->textureID);
+	glColor3f(1.,1.,1.);
+    glPushMatrix();
+		glTranslatef(0., -5.+decalage, -4.5);
+		glScalef(0.,0.4,0.4);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0, 0);
+			glVertex3f(0, -1, -1);
+			glTexCoord2f(1, 0);
+			glVertex3f(0, 1, -1);
+			glTexCoord2f(1, 1);
+			glVertex3f(0, 1, 1);
+			glTexCoord2f(0, 1);
+			glVertex3f(0, -1, 1);
+		glEnd();
+	glPopMatrix();
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
 }
 
 void loadTexture(MenuList* liste, const char* filename) {
+    int width, height, channels;
+    stbi_set_flip_vertically_on_load(1);
+    unsigned char* image = stbi_load(filename, &width, &height, &channels, STBI_rgb_alpha);
+
+    glGenTextures(1, &(liste->textureID));
+    glBindTexture(GL_TEXTURE_2D, liste->textureID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
+    stbi_image_free(image);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void loadTextureVie(VieList* liste,const char* filename) {
     int width, height, channels;
     stbi_set_flip_vertically_on_load(1);
     unsigned char* image = stbi_load(filename, &width, &height, &channels, STBI_rgb_alpha);
@@ -180,7 +225,6 @@ void onKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 			default: fprintf(stdout,"Touche non gérée (%d)\n",key);
 		}
 	}
-	
 }
 
 void mouse_mouv(GLFWwindow* window, double xpos, double ypos){
@@ -268,6 +312,7 @@ int main(int argc, char** argv)
 	glPointSize(5.0);
 	glEnable(GL_DEPTH_TEST);
 
+	//Définir les différentes variables et initialiser les tableaux de structures
 	float profondeur=0.;
 	float vitesse_corridor=0.2;
 	float taille = 1000;
@@ -282,17 +327,21 @@ int main(int argc, char** argv)
 	loadTexture(&listeMenu[0], "img/Menu.png");
     loadTexture(&listeMenu[1], "img/MenuG.png");
     loadTexture(&listeMenu[2], "img/MenuP.png");
+	loadTextureVie(&listeVie[0], "img/Bonus.png");
+	loadTextureVie(&listeVie[1], "img/Bonus.png");
+	loadTextureVie(&listeVie[2], "img/Bonus.png");
+	loadTextureVie(&listeVie[3], "img/Bonus.png");
+	loadTextureVie(&listeVie[4], "img/Bonus.png");
 	
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
-		srand(time(NULL));
 		/* Get time (in second) at loop beginning */
 		double startTime = glfwGetTime();
 		
 
 		/* Cleaning buffers and setting Matrix Mode */
-		glClearColor(0.2,0.0,0.0,0.0);
+		glClearColor(196/225.,245/255.0,252/255.,0.0);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -317,6 +366,10 @@ int main(int argc, char** argv)
             drawMenuList(&listeMenu[2]);
         }
 
+		for(int i = 0; i<raquette->nbrVie;i++){
+			drawVie(&listeVie[i], 1*i);
+		}
+
 		if(estColle){
 			colleRaquette(ball, newX, newY);
 		}
@@ -326,7 +379,7 @@ int main(int argc, char** argv)
 			glfwWaitEventsTimeout(FRAMERATE_IN_SECONDS-elapsedTime);
 					
 		}
-		if(clickGauche){
+		if(clickGauche && !raquetteBlock && !estColle){
 			profondeur +=  vitesse_corridor;
 		}
 
@@ -336,127 +389,90 @@ int main(int argc, char** argv)
 
 		drawCorridor(profondeur, taille);
 		drawRaquette(raquette, newX, newY);
-		//printf("%f\n",raquette->y);
 		drawball(ball);
-		//printf("X : %f, Y : %f, Z : %f\n", ball->posY, ball->posZ, ball->posX); 
-		//collisionsmurs
+		// collisions des murs
 		if(ball->posY - ball->radius < -0.5 * 14 || ball->posY + ball->radius > 0.5 * 14){
             
         	ball->speedY*= -1;
 			
         }
-        // collisions sol/plafond
+        // collisions du sol et du plafond
         if(ball->posZ - ball->radius < -0.5 * 10 || ball->posZ  + ball->radius> 0.5 * 18){
-			//if(ball->speedZ > 0)
         	ball->speedZ *= -1;
     	}
 		for(int i=0; i<NBR_OBSTACLES;i++){
 				int distance = 40*(i+1);
 				setPositionObstacles(profondeur, distance, &listeObs[i]);
-				//printf("C'est là : %f\n", listeObs[i].positionProf);
 				drawObstacles(profondeur, distance, listeObs[i]);
-				// float balle=ball->posX;
-				// printf("%f\n",balle);
-				// printf("posObstacle1 : %f\n",profondeur-(40*(0+1))+ ball->speedX);
-
 				//collision balle/obstacle
 				if(ball->posX - ball->radius <= profondeur-(40*(i+1)) && ball->posX + ball->radius >= profondeur-(40*(i+1)) + 1){
-					//fprintf(stdout,"collision profondeur,(%d)\n");
 					if(ball->posY - ball->radius< listeObs[i].x2 && ball->posY + ball->radius > listeObs[i].x1){
-						//fprintf(stdout,"collision largeur,(%d)\n");
 						if(ball->posZ- ball->radius < listeObs[i].y1  && ball->posZ + ball->radius > listeObs[i].y2){
-							//fprintf(stdout,"collision hauteur,(%d)\n");
 							if (ball->speedX <0) ball->speedX *= -1;
 						}
 					}
 				}
 
 					//collision raquette/obstacle
-
-					if(0 <= profondeur-(40*(i+1)) && 0 >= profondeur-(40*(i+1)) + 1){
-					//fprintf(stdout,"collision profondeur,(%d)\n");
-						if((newX + 1)< listeObs[i].x2 && (newX - 1) > listeObs[i].x1){
-						//fprintf(stdout,"collision largeur,(%d)\n");
-							if((newY + 1) < listeObs[i].y1  && (newY-1) > listeObs[i].y2){
-							//fprintf(stdout,"collision hauteur,(%d)\n");
-							if (ball->speedX <0) clickGauche = false;
-							}
+				if( (profondeur- distance) >= -3 && profondeur-distance <= 1){
+					if((newX )< listeObs[i].x2 && (newX ) > listeObs[i].x1){
+						if((newY) < listeObs[i].y1  && (newY) > listeObs[i].y2){
+							raquetteBlock = true;
+						}
+						else{
+							raquetteBlock = false;
 						}
 					}
-		
+					else{
+						raquetteBlock = false;
+					}
+				}
 		}
 
 		if(-(ball->posX)>(listeObs[NBR_OBSTACLES-1].positionProf)){
 			gagne = 1;
 		}
+
 		//collisions balle/raquette
-		
 		if(ball->posX + ball->radius > 0){
-				if(ball->posZ - ball->radius  < (newY+ 1)  &&  ball->posZ + ball->radius > (newY - 1 ) ){
-					if(ball->posY - ball->radius < (newX + 1)  && ball->posY + ball->radius > (newX - 1) ){
-						
-								if(ball->speedX > 0){
-									ball->speedX *= -1;
-								}
+			if(ball->posZ - ball->radius  < (newY+ 1)  &&  ball->posZ + ball->radius > (newY - 1 ) ){
+				if(ball->posY - ball->radius < (newX + 1)  && ball->posY + ball->radius > (newX - 1) ){
+					if(ball->speedX > 0){
+						ball->speedX *= -1;
 					}
-					else{
-						estColle = true;
-						perdUneVie = false;
-						raquette->nbrVie -= 1;
-					
-						printf("%d\n", raquette->nbrVie);
-					}
+				} else{
+					estColle = true;
+					perdUneVie = false;
+					raquette->nbrVie -= 1;
 				}
-						else{
+			} else{
 				estColle = true;
 				perdUneVie = false;
 				raquette->nbrVie -= 1;
-			
-				printf("%d\n", raquette->nbrVie);
-			}
-					
+			}			
 		}		
-			
-		
-		bool test;
 		
 		for (int i=1; i<NBR_BONUS;i++){
 			int distance = 73*(i+1);
 			glPushMatrix();
-				//glRotatef(2.*glfwGetTime(), 1.0, 0.0, 0.0);
 				drawBonus(profondeur, distance, listeBonus[i]);
 			glPopMatrix();
-		// collisions raquette/bonus
-			if(0<= profondeur-(73*(i+1)) && 0 >= profondeur-(73*(i+1)) + 1){
-				if(newX - 1 > listeBonus[i].x1 && newX+1 < listeBonus[i].x2){
-						if(newY - 1  >= listeBonus[i].y2   && newY+1  <= listeBonus[i].y1){
-							test=true;
-							printf("%f\n",test);
-							/*estColle = collisionBonus(&listeBonus[i], ball, raquette, newX, newY);
-							printf("Colle : %d\n", estColle);
-							printf("%s\n", "Ca passe !");*/
-						}
+
+			// collisions raquette/bonus
+			if((profondeur- distance) >= -3 && profondeur-distance <= 1){
+				if((newX )< listeBonus[i].x2 && (newX ) > listeBonus[i].x1){
+					if((newY) < listeBonus[i].y1  && (newY) > listeBonus[i].y2){
+						estColle = collisionBonus(&listeBonus[i], ball, raquette, newX, newY);
+					}
 				}
 			}
 		}
 
-		
-
-		/* Scene rendering */
-		
-		
-		
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
 
 		/* Poll for and process events */
 		glfwPollEvents();
-
-		/* Elapsed time computation from loop begining */
-		
-		
-
-		/* Animate scenery */
 	}
 
 	glfwTerminate();

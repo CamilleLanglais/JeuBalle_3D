@@ -23,6 +23,7 @@ typedef struct Bonus{
     float xtransl;
     float ytransl;
 	char typeBonus;
+	bool visible;
 } Bonus;
 
 
@@ -30,4 +31,4 @@ void drawBonus(float profondeur, float distance, Bonus bonus);
 
 void positionBonus(Bonus *liste, int nbrBonus);
 
-bool collisionBonus(Bonus bonus, Ball ball, Raquette raquette, float newX, float newY);
+bool collisionBonus(Bonus *bonus, Ball *ball, Raquette *raquette, float newX, float newY);

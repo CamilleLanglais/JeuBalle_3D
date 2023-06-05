@@ -46,6 +46,7 @@ bool perdUneVie = false;
 bool debutBall = true;
 bool prendSpecialBonus = false;
 bool takeBonus = false;
+bool estColle = true;
 double alpha = 60.0;
 
 #define NBR_OBSTACLES 12
@@ -182,8 +183,7 @@ void onKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 
 void mouse_mouv(GLFWwindow* window, double xpos, double ypos){
 	glfwGetCursorPos(window, &xpos, &ypos);
-	// newX = xpos;
-	// newY = ypos; 
+ 
 	double h = (tan(alpha/2))*2;
 	if(xpos<WINDOW_WIDTH-120 && xpos>120){
 		if(xpos >= 120  && xpos <= WINDOW_WIDTH-120){
@@ -200,15 +200,14 @@ void mouse_mouv(GLFWwindow* window, double xpos, double ypos){
 
 void mouse_button(GLFWwindow* window, int button, int action, int mods)
 {
-	if(!showMenu || !perdu || !gagne){
+	if(!showMenu && !perdu && !gagne){
 		if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS){
-			if(perdUneVie == true || prendSpecialBonus == true || debutBall == true){
+			if(estColle == true ){
 				ball->speedX = -0.5;
 				ball->speedY = 0.;
 				ball->speedZ = 0.;
-				perdUneVie = false;
-				prendSpecialBonus = false;
-				debutBall = false;
+				estColle = false;
+				
 			}
 		}
 		if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
@@ -217,6 +216,11 @@ void mouse_button(GLFWwindow* window, int button, int action, int mods)
 		if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE){
 			clickGauche = false;
 		}
+	} else{
+		clickGauche = false;
+		ball->speedX = 0.;
+		ball->speedY = 0.;
+		ball->speedZ = 0.;
 	}
     
 }
@@ -310,7 +314,7 @@ int main(int argc, char** argv)
             drawMenuList(&listeMenu[2]);
         }
 
-		if(debutBall==true){
+		if(estColle){
 			colleRaquette(ball, newX, newY);
 		}
 
@@ -319,26 +323,16 @@ int main(int argc, char** argv)
 			glfwWaitEventsTimeout(FRAMERATE_IN_SECONDS-elapsedTime);
 					
 		}
-		if(clickGauche==true){
+		if(clickGauche){
 			profondeur +=  vitesse_corridor;
-		}
-
-		if(perdUneVie==true){
-			colleRaquette(ball, newX, newY);
-			raquette->nbrVie -= 1;
 		}
 
 		if(raquette->nbrVie==0){
 			perdu = 1;
 		}
 
-		// if(takeBonus==true){
-		// 	prendSpecialBonus = collisionBonus(bonus, ball, raquette, newX, newY);
-		// 	supprimerBonusCollision(listeBonus, NBR_BONUS, INDEXAMETTRE);
-		// }
-
 		drawCorridor(profondeur, taille);
-		//mouvRaquette(*raquette, aspectRatio, newX, newY, WINDOW_WIDTH, WINDOW_HEIGHT, 16., -9.);
+		
 		drawRaquette(*raquette, newX, newY);
 		drawball(ball);
 		//printf("X : %f, Y : %f, Z : %f\n", ball->posY, ball->posZ, ball->posX); 
@@ -354,7 +348,10 @@ int main(int argc, char** argv)
         	ball->speedX *= -1;
     	}
 		for(int i=0; i<NBR_OBSTACLES;i++){
-				drawObstacles(profondeur,40*(i+1), listeObs[i]);
+				int distance = 40*(i+1);
+				setPositionObstacles(profondeur, distance, &listeObs[i]);
+				//printf("C'est là : %f\n", listeObs[i].positionProf);
+				drawObstacles(profondeur, distance, listeObs[i]);
 				// float balle=ball->posX;
 				// printf("%f\n",balle);
 				// printf("posObstacle1 : %f\n",profondeur-(40*(0+1))+ ball->speedX);
@@ -368,11 +365,17 @@ int main(int argc, char** argv)
 						}
 					}
 				}
+				//printf("Position obstacle %d en z : %f\n",  i, listeObs[i].positionProf);
+
 				/*||  ball->posX <= profondeur-(40*(i+1)) -1*/
 			// if(ball->posY  listeObs[i].y1 ){
 			// 	ball->speedY *= -1;
 			// }
 			//x1 et y2 négatifs
+		}
+
+		if(-(ball->posX)>(listeObs[2].positionProf)){
+			gagne = 1;
 		}
 
 		//collisions balle/raquette
@@ -392,7 +395,11 @@ int main(int argc, char** argv)
 				}
 			}
 			else{
-
+				estColle = true;
+				perdUneVie = false;
+				raquette->nbrVie -= 1;
+			
+				printf("%d\n", raquette->nbrVie);
 			}
 		}
 		bool test;
@@ -405,11 +412,13 @@ int main(int argc, char** argv)
 		// collisions balle/bonus
 			if(ball->posX - ball->radius <= profondeur-(73*(i+1)) && ball->posX + ball->radius >= profondeur-(73*(i+1)) + 1){
 				if(ball->posZ - ball->radius< listeBonus[i].x1 && ball->posZ + ball->radius > listeBonus[i].x2){
-						if(ball->posY + ball->radius  <= listeBonus[i].y2   && ball->posY - ball->radius +1 >= listeBonus[i].y1){
-							test=true;
-						}
+					if(ball->posY + ball->radius  <= listeBonus[i].y2   && ball->posY - ball->radius +1 >= listeBonus[i].y1){
+						estColle = collisionBonus(&listeBonus[i], ball, raquette, newX, newY);
+						printf("Colle : %d\n", estColle);
+						printf("%s\n", "Ca passe !");
 					}
 				}
+			}
 		}
 
 		/* Scene rendering */

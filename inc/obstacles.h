@@ -17,6 +17,7 @@ typedef struct Obstacles{
 	float x2;
 	float y1; 
 	float y2;
+	float positionProf;
 	char typeMur;
 	float typeTaille;
 } Obstacles;
@@ -24,3 +25,5 @@ typedef struct Obstacles{
 void drawObstacles(float profondeur, float distance, Obstacles obstacle);
 
 void positionObstacles(Obstacles *liste, int nbrObstacles);
+
+void setPositionObstacles(float profondeur, float distance, Obstacles *obstacle);

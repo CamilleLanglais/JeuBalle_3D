@@ -5,7 +5,8 @@
 #include "time.h"
 
 void drawBonus(float profondeur, float distance, Bonus bonus){
-	glPushMatrix();
+    if(visible){
+        glPushMatrix();
 		glTranslatef(profondeur-distance, 0., 0.);
 		glScalef(1., 1., 1.);
         if(bonus.typeBonus=='t'){
@@ -33,7 +34,8 @@ void drawBonus(float profondeur, float distance, Bonus bonus){
 			    glVertex3f(0.0,bonus.x1,bonus.y1);
 		    glEnd();*/
         }
-    glPopMatrix();	
+        glPopMatrix();	
+    }
 }
 
 void positionBonus(Bonus *liste, int nbrBonus){
@@ -60,7 +62,7 @@ void positionBonus(Bonus *liste, int nbrBonus){
         } else{
             rdPos = 3;
         }
-        printf("%d\n", rdPos);
+        //printf("%d\n", rdPos);
         switch(rdPos){
             case 0 :
                 //Bonus à gauche, milieu
@@ -126,27 +128,14 @@ void positionBonus(Bonus *liste, int nbrBonus){
     }
 }
 
-bool collisionBonus(Bonus bonus, Ball ball, Raquette raquette, float newX, float newY){
+bool collisionBonus(Bonus *bonus, Ball *ball, Raquette *raquette, float newX, float newY){
     bool typeBonus = false;
-    if (bonus.typeBonus == 'c'){
+    if (bonus->typeBonus == 'c'){
         colleRaquette(&ball, newX, newY);
         typeBonus = true;
     } else{
-        raquette.nbrVie +=1;
+        raquette->nbrVie +=1;
     }
+    bonus->visible = false;
     return typeBonus;
-}
-
-void supprimerBonusCollision(Bonus* liste, int tailleTableau, int indexBonus) {
-    int indiceBonusASupprimer = -1;
-    // Recherche de l'indice du bonus avec le type de collision spécifié
-    for (int i = 0; i < tailleTableau; i++) {
-        if (liste[i].typeBonus == indexBonus) {
-            indiceBonusASupprimer = i;
-            break;
-        }
-    }
-
-    // Utilisation de memmove pour déplacer les éléments suivants
-    memmove(&liste[indiceBonusASupprimer], &liste[indiceBonusASupprimer + 1], (tailleTableau - indiceBonusASupprimer - 1) * sizeof(Bonus));
 }

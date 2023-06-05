@@ -2,9 +2,9 @@
 #include "3D_tools.h"
 #include <math.h>
 
-
 void drawObstacles(float profondeur, float distance, Obstacles obstacle){
-	glPushMatrix();
+	if(obstacle.positionProf>2){
+		glPushMatrix();
 		glTranslatef(profondeur-distance, 0., 0.);
 		glScalef(1., 16/9., 1.);
 		glColor3f(232/255.0,1.0,183/255.0);
@@ -15,7 +15,7 @@ void drawObstacles(float profondeur, float distance, Obstacles obstacle){
 			glVertex3f(0.0,obstacle.x1,obstacle.y1);
 		glEnd();
     glPopMatrix();
-	
+	}
 }
 
 void positionObstacles(Obstacles *liste, int nbrObstacles){
@@ -62,4 +62,8 @@ void positionObstacles(Obstacles *liste, int nbrObstacles){
 				break;
 		}
 	}
+}
+
+void setPositionObstacles(float profondeur, float distance, Obstacles *obstacle){
+	obstacle->positionProf = distance - profondeur;
 }
